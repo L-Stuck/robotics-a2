@@ -1,0 +1,25 @@
+# only the files of the submission are tracked
+/*
+!/.gitignore
+!/controlDLL/
+!/forwardkinematics/
+!/build/
+!/report/
+!/plotting/
+
+/controlDLL/*
+!/controlDLL/control.cpp
+
+/forwardkinematics/*
+!/forwardkinematics/forwardkinematics.cpp
+
+/build/*
+!/build/gains_1.txt
+
+/report/*
+!/report/report.tex
+!/report/report.pdf
+
+/plotting/*
+!/plotting/*.png
+/plotting/proj1_test.png
