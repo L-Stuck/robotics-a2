@@ -532,10 +532,11 @@ Before we started the recording, we moved the robot to the start point with \tex
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.78\textwidth]{proj2_circle.png}
-  \caption{\texttt{proj2Control}, one circle: position $x$ and desired position $x_d$, position error
-  $e = x - x_d$, joint angles $q$ and joint torques $\tau$ (dotted lines: torque limits).
-  Gains: $k_p = 8000/8000/200$, $k_v = 280/280/10$.}
+  \includegraphics[width=0.82\textwidth]{proj2_circle.png}
+  \caption{\texttt{proj2Control}, one circle: position ($x$, $y$) and desired position, orientation
+  $\alpha$ and desired orientation, position error $e = x - x_d$, joint angles $q$ and joint torques
+  $\tau$ (dotted lines: torque limits). The desired orientation is 0, so the orientation error is
+  $\alpha$ itself. Gains: $k_p = 8000/8000/200$, $k_v = 280/280/10$.}
   \label{fig:proj2}
 \end{figure}
 
@@ -738,9 +739,9 @@ controller has computed it:
     \hline
     Student Name & (A1) & A2 & A3 & A4 & (A5) & (B1) & B2 & C1 & C2 & C3 & C4 & (C5) \\ \hline
     \hline
-    Lukas Hans-Ludwig Göppl     &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-    Laurent Sebastian Stuck     &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-    Siham Esam Zakaria Tolba    &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+    Lukas Hans-Ludwig Göppl     & x & x & x & x & x &   &   &   &   &   &   &   \\ \hline
+    Laurent Sebastian Stuck     &   &   &   &   &   &   &   & x & x & x & x & x \\ \hline
+    Siham Esam Zakaria Tolba    &   &   &   &   &   & x & x &   &   &   &   &   \\ \hline
   \end{tabular}
 \end{table}
 
