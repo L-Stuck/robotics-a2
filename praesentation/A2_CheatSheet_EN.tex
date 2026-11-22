@@ -71,7 +71,7 @@
 \newtcolorbox{extra}{
   enhanced, breakable, colback=gray!7, colframe=gray!70!black, boxrule=0.6pt, arc=2pt,
   left=6pt, right=6pt, top=4pt, bottom=4pt,
-  title={\bfseries Only if asked -- not in the report like this (own calculation)},
+  title={\bfseries With orientation included -- short version is in the report (A5 b, determinant)},
   coltitle=white, fonttitle=\bfseries, fontupper=\small
 }
 
@@ -104,7 +104,7 @@ numbers from the report}
   A4 & \code{computeJ} & $J = \partial F / \partial q$ & last row $(1, 1, 1)$ \\
   A5 & Sketch & Columns of $J$ as arrows & i controllable, ii close to, iii in singularity \\
   B1 & Calculation & 2 cubic splines + via point & $\dot q_b = (-0.31,\ 0,\ 0)$\,rad/s \\
-  B2 & \code{computeTf}, \code{computeSpline}, \code{followSpline} & Spline + PD + $G$ & proj1: $t_f = 2.46$\,s, error $< 0.01$\,rad \\
+  B2 & \code{computeTf}, \code{computeSpline}, \code{followSpline} & Spline + PD + $G$ & proj1: $t_f = 2.47$\,s, error $< 0.01$\,rad \\
   C1 & \code{setCircleTarget}, \code{proj2Control} & Circle, $\beta = \dot\beta\,t$ & 5\,s per circle, $0.25$\,m/s \\
   C2 & \code{operationalSpaceControl} & $\tau = J^T F + G$ & no inverse kinematics \\
   C3 & Gains & Error $\sim 1/k_p$ & max.\ 11\,mm, RMS 7\,mm, $\tau_1$ up to 116\,Nm \\
@@ -130,7 +130,7 @@ numbers from the report}
 \begin{itemize}
   \item $L_1 = 0.41$\,m, $L_2 = 0.43$\,m, $L_3 = 0.055$\,m (\code{l1}, \code{l2}, \code{l3} in the header). Abbreviations as
         in the report: $s_1 = \sin q_1$, $c_{12} = \cos(q_1 + q_2)$, $s_{123} = \sin(q_1 + q_2 + q_3)$ etc.
-  \item Simulator: $\dot q_{\max} = 0.79$\,rad/s, $\ddot q_{\max} = 1.05$\,rad/s$^2$ for all joints,
+  \item Simulator: $\dot q_{\max} = \frac{\pi}{4} = 0.79$\,rad/s, $\ddot q_{\max} = \frac{\pi}{3} = 1.05$\,rad/s$^2$ for all joints,
         $\tau_{\max} = 156.4 / 89.4 / 20.1$\,Nm.
 \end{itemize}
 
@@ -162,7 +162,7 @@ directly with \code{gv.x}, the origin is a different one.)
 \begin{enumerate}
   \item 3-DOF mode: \code{robottype 1}. In the GUI switch ``torque limits'' off and click ``Load gains''
         (\code{loadgains} does not work in the console; there use e.g.\ \code{kp 21 3000 1350 300}, \code{kv 21 245 70 21}).
-  \item \code{proj1 0 0 0} -- moves to the circle start $(0.8,\ 0.35)$ in 2.46\,s, then float. The three numbers are
+  \item \code{proj1 0 0 0} -- moves to the circle start $(0.8,\ 0.35)$ in 2.47\,s, then float. The three numbers are
         ignored, but the console wants three arguments.
   \item \code{proj2} -- circle, 5\,s per circle, keeps going until another controller is started. (If the console says
         ``expected \ldots{} args'', add zeros as for proj1.)
@@ -429,9 +429,8 @@ clockwise. The numbers are the $x$ and $y$ entries of the columns of $J$.
 \begin{extra}
 $\det J = -L_1 L_2\, c_2$ (subtract column 2 from column 1 and column 3 from column 2, then expand). In ii and iii
 $q_2 = \frac{\pi}{2}$, so $\det J = 0$ in \emph{both}. With the orientation included, ii is already singular. The reason:
-links 1 and 2 are exactly stretched out. The small motion along the arm in ii only comes from joint 3, and that joint
-always turns the end effector as well, so $\alpha$ changes too. The task asks about the sketch (only $x$, $y$), that is
-why the report says ``close to''. In i $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne 0$.
+links 1 and 2 are exactly stretched out. The small motion along the arm in ii only exists because link 3 is turned by $0.1$\,rad. It always comes together with a rotation of the end effector, so $\alpha$ changes too.
+The report says both: ``close to'' for the position (sketch, only $x$, $y$) and ``singular'' with the orientation included. In i $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne 0$.
 \end{extra}
 
 \begin{fragen}
@@ -440,7 +439,7 @@ why the report says ``close to''. In i $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne
 motion in the other direction.}
 \frage{Why is ii only ``close to'' and iii ``in'' the singularity?}
 {In ii the arrows still have a small part along the arm because of $q_3 = 0.1$ ($0.01$\,m/rad), in iii it is exactly zero.
-So in ii the motion is still possible, but only with very large joint velocities.}
+So in ii the motion is still possible, but only with very large joint velocities. This is for the position. With the orientation included ii is already singular as well (see grey box), the report says the same.}
 \frage{What happens close to a singularity?}
 {A small motion in operational space needs a huge motion in joint space (tutorial T5). We also see it in the bonus: where
 $|\det J|$ is small, the error gets larger.}
@@ -529,8 +528,8 @@ $t_f$ = largest of these values over all joints. proj1 from the zero configurati
   & Joint 1 & Joint 2 & Joint 3 \\
   \midrule
   $|\Delta q|$ [rad] & 0.10 & 0.97 & 1.06 \\
-  $t_f$ from the velocity limit [s] & 0.18 & 1.84 & 2.01 \\
-  $t_f$ from the acceleration limit [s] & 0.74 & 2.35 & \textbf{2.46} \\
+  $t_f$ from the velocity limit [s] & 0.18 & 1.85 & 2.03 \\
+  $t_f$ from the acceleration limit [s] & 0.74 & 2.35 & \textbf{2.47} \\
   \bottomrule
 \end{tabular}
 }
@@ -575,24 +574,24 @@ sets \code{gv.qd} with \code{toRad(5.5)}, \code{toRad(55.4)}, \code{toRad(-60.8)
 \begin{lstlisting}[firstnumber=78]
 void followSpline(GlobalVariables& gv)
 {
-  double t = gv.curTime - spline.t0;
-  if (t > spline.tf) {
-    floatControl(gv);
-    return;
-  }
+  double t = min(gv.curTime - spline.t0, spline.tf);
 
   gv.qd = spline.a0 + spline.a1 * t + spline.a2 * (t * t) + spline.a3 * (t * t * t);
   gv.dqd = spline.a1 + spline.a2 * (2.0 * t) + spline.a3 * (3.0 * t * t);
 
+  if (gv.curTime - spline.t0 > spline.tf) {
+    floatControl(gv);
+    return;
+  }
   gv.tau = -gv.kp * (gv.q - gv.qd) - gv.kv * (gv.dq - gv.dqd) + gv.G;
 }
 \end{lstlisting}
-\textbf{L.\,78--90:} Time since the start, after $t_f$ float ($\tau = G$). Otherwise evaluate the spline and its
-derivative, write them into \code{gv.qd}/\code{gv.dqd}, then the control law from the sheet
+\textbf{L.\,78--90:} Time since the start, limited to $t_f$ with \code{min}. Evaluate the spline and its
+derivative, write them into \code{gv.qd}/\code{gv.dqd}. After $t_f$ they hold the goal and zero velocity, then float ($\tau = G$). Before that the control law from the sheet
 $\tau = -k_p(q - q_d) - k_v(\dot q - \dot q_d) + G$. \code{*} between \code{PrVector}s is element-wise, every joint has
 its own $k_p$. \code{njtrackControl} and \code{proj1Control} only call \code{followSpline}.
 
-\textbf{Result proj1:} $t_f = 2.46$\,s (acceleration limit of joint 3). $q$ and $q_d$ lie on top of each other, error
+\textbf{Result proj1:} $t_f = 2.47$\,s (acceleration limit of joint 3). $q$ and $q_d$ lie on top of each other, error
 always $< 0.01$\,rad, max.\ $55.5$\,Nm at joint 1 (limit $156.4$). Gains $k_p = 3000/1350/300$, $k_v = 245/70/21$, tuned
 by hand in the simulator.
 
@@ -610,7 +609,7 @@ Set both $\le$ the limit and solve for $t_f$.}
 and $t_f$ and are exactly at the goal at $t_f$, so all joints arrive together (required in B2c). The other joints stay
 below their limits.}
 \frage{What happens after $t_f$?}
-{The controller switches to float ($\tau = G$), as the sheet asks. Float has no position term, so a small error stays.}
+{The controller switches to float ($\tau = G$), as the sheet asks. Float only compensates gravity, it has no position and no velocity term. So it does not pull the arm to the goal and does not actively brake. Our arm still stays, because the spline ends with zero velocity and friction stops the rest. The small error from the end stays.}
 \frage{Why can the gains be much higher than in A1?}
 {In A1 the desired angle jumped by $0.17$\,rad ($10^\circ$), the error was large at the start and so was the torque.
 Here $q_d$ changes slowly and does not jump, the error stays small. So $\tau$ stays below the limit even with a large
@@ -916,12 +915,13 @@ generator of our own, so no extra include is needed; the fixed start value gives
 
 \textbf{Results (compared with the normal circle):}
 \begin{itemize}
-  \item \textbf{Noise:} on average only $0.7$\,mm (max.\ $1.9$\,mm), although up to $15.6$\,Nm at joint 1. The noise is
+  \item \textbf{What the plot shows:} the distance to the normal run, not the tracking error $|x - x_d|$. The tracking error hardly changes: RMS $7.1$ (noise) and $7.3$ ($G$) instead of $7.2$\,mm.
+  \item \textbf{Noise:} on average only $0.7$\,mm (after the start max.\ $1.6$\,mm), although up to $15.6$\,Nm at joint 1. The noise is
         different in every cycle and zero on average. The heavy arm cannot follow such fast changes, and the controller
         corrects the rest.
   \item \textbf{80\,\% of $G$:} on average $2.6$\,mm (max.\ $3.9$\,mm). The missing torque is always there and always acts
         in the same direction. The P term has to replace it, and for that it needs an error.
-  \item \textbf{Not the same everywhere:} with the $G$ error the deviation changes along the circle between $1.7$ and
+  \item \textbf{Not the same everywhere:} with the $G$ error the deviation changes along the circle (after the start offset of $1.3$\,mm, the recordings do not start at exactly the same point) between $1.7$ and
         $3.9$\,mm. It is large where $|\det J|$ is small ($0.10$--$0.12$, closer to a singularity), and small where
         $|\det J|$ is large ($0.16$--$0.18$). Our explanation: through $\tau = J^T F$ the controller needs a larger force
         for the same torque close to a singularity, and a larger force means a larger error. Also the missing torque

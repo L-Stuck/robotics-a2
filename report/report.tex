@@ -26,13 +26,15 @@ Lukas~Hans-Ludwig~Göppl, Laurent~Sebastian~Stuck, Siham~Esam~Zakaria~Tolba
 \begin{gather*}
   s_i = \sin(q_i), \quad c_i = \cos(q_i), \quad
   s_{ij} = \sin(q_i + q_j), \quad c_{ij} = \cos(q_i + q_j), \\
-  s_{123} = \sin(q_1 + q_2 + q_3), \quad c_{123} = \cos(q_1 + q_2 + q_3)
+  s_{123} = \sin(q_1 + q_2 + q_3), \quad c_{123} = \cos(q_1 + q_2 + q_3), \\
+  c\theta_i = \cos(\theta_i), \quad s\theta_i = \sin(\theta_i), \quad
+  c\alpha_{i-1} = \cos(\alpha_{i-1}), \quad s\alpha_{i-1} = \sin(\alpha_{i-1})
 \end{gather*}
 
 $L_1$, $L_2$, $L_3$ are the link lengths from \texttt{forwardkinematics.hpp}
-(\texttt{l1}, \texttt{l2}, \texttt{l3} in the code):
-$L_1 = 0.4318 - 0.0203 = 0.41$\,m, $L_2 = 0.43$\,m, $L_3 = 0.055$\,m.
-All angles are in radians.
+(\texttt{l1}, \texttt{l2}, \texttt{l3} in the code). Rounded to two decimals:
+$L_1 = 0.41$\,m, $L_2 = 0.43$\,m, $L_3 = 0.06$\,m. The checks in this report are computed with the
+exact values from the header. All angles are in radians.
 
 % ===========================================================================
 \section*{A: Forward Kinematics}
@@ -291,7 +293,8 @@ The numbers are the $x$ and $y$ entries of the columns of $J$:
   \item \textbf{ii: close to a singularity.} The arm is almost stretched out. The three vectors are
         almost parallel. They all point sideways and have only a very small part along the arm
         (0.01\,m/rad). Moving along the arm is still possible, but the joints would have to move very
-        fast for it.
+        fast for it. This small part only exists because link 3 is turned by 0.1\,rad. It is the same
+        for all three joints, so the end effector can only move along the arm while it also turns.
   \item \textbf{iii: in a singularity.} The arm is fully stretched out and all three vectors are
         exactly parallel. No matter how the joints move, the end effector cannot move along the arm.
         It has lost one degree of freedom.
@@ -300,6 +303,21 @@ The numbers are the $x$ and $y$ entries of the columns of $J$:
 So we can see it in the drawing like this: if the vectors point in different directions, the robot is
 controllable. The more parallel they get, the closer it is to a singularity. If all vectors are
 parallel, it is in a singularity.
+
+The drawing only shows the position ($x$, $y$). To also include the orientation we checked the
+determinant of our Jacobian (lecture: a singularity can be detected with the determinant):
+\[
+  \det J = -L_1 L_2\, c_2
+\]
+\begin{itemize}
+  \item i: $q_2 = 0$, so $\det J = -L_1 L_2 = -0.18 \neq 0$. Position and orientation are fully
+        controllable.
+  \item ii: $q_2 = \frac{\pi}{2}$, so $\det J = 0$. Links 1 and 2 are in one line. For the position
+        alone ii is close to a singularity, like in the drawing. But $x$, $y$ and $\alpha$ cannot be
+        chosen independently any more, so for position and orientation together ii is already
+        singular.
+  \item iii: $q_2 = \frac{\pi}{2}$ as well, so $\det J = 0$. This fits to the drawing.
+\end{itemize}
 
 % ===========================================================================
 \section*{B: Trajectory Generation in Joint Space}
@@ -425,15 +443,17 @@ It writes them into \texttt{gv.qd} and \texttt{gv.dqd}. Then it uses the control
   \tau = -k_p\,(q - q_d) - k_v\,(\dot q - \dot q_d) + G(q)
 \]
 For $G$ we use \texttt{gv.G} from the simulator, so \texttt{PreprocessControl()} does not change it
-any more. When $t_f$ is over, the controller switches to float control ($\tau = G$).
+any more. When $t_f$ is over, $q_d$ and $\dot q_d$ stay at the end of the spline (the goal angles and
+zero velocity) and the controller switches to float control ($\tau = G$).
 
 \subsubsection*{(c) Trajectory to a specific point}
 
-\texttt{initProj1Control()} sets \texttt{gv.qd} to $(0.096,\ 0.967,\ -1.061)^T$\,rad and then
+\texttt{initProj1Control()} sets \texttt{gv.qd} to $(0.10,\ 0.97,\ -1.06)^T$\,rad and then
 computes the spline like in (a). \texttt{proj1Control()} follows it with the controller from (b).
 
-In the simulator $\dot q_{\max} = 0.79$\,rad/s and $\ddot q_{\max} = 1.05$\,rad/s$^2$ for all joints.
-Starting from the zero configuration we get:
+In the simulator $\dot q_{\max} = \frac{\pi}{4} = 0.79$\,rad/s and
+$\ddot q_{\max} = \frac{\pi}{3} = 1.05$\,rad/s$^2$ for all joints. Starting from the zero configuration
+we get:
 
 \begin{table}[H]
   \centering
@@ -443,13 +463,13 @@ Starting from the zero configuration we get:
     & Joint 1 & Joint 2 & Joint 3 \\
     \midrule
     $|\Delta q|$ [rad] & 0.10 & 0.97 & 1.06 \\
-    $t_f$ from the velocity limit [s] & 0.18 & 1.84 & 2.01 \\
-    $t_f$ from the acceleration limit [s] & 0.74 & 2.35 & 2.46 \\
+    $t_f$ from the velocity limit [s] & 0.18 & 1.85 & 2.03 \\
+    $t_f$ from the acceleration limit [s] & 0.74 & 2.35 & 2.47 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-The largest value is $t_f = 2.46$\,s. It comes from the acceleration limit of joint 3. All joints use
+The largest value is $t_f = 2.47$\,s. It comes from the acceleration limit of joint 3. All joints use
 this time and reach the goal together (Fig.~\ref{fig:proj1}).
 
 \textbf{Gains:} $k_p = [3000,\ 1350,\ 300]^T$, $k_v = [245,\ 70,\ 21]^T$ (for \texttt{njtrack} and
@@ -468,8 +488,13 @@ not get too large.
 \end{figure}
 
 $q$ and $q_d$ lie on top of each other. The error is always below 0.01\,rad. The largest torque is
-55.5\,Nm at joint 1, which is far below the limit of 156.4\,Nm. After $t_f$ the float controller
-holds the arm, so a small error stays.
+55.5\,Nm at joint 1, which is far below the limit of 156.4\,Nm.
+
+After $t_f$ the controller is in float mode. Float only compensates gravity ($\tau = G$). It has no
+position term and no velocity term, so it does not pull the arm to the goal and it does not actively
+stop a remaining motion. In our run the arm is almost at rest at $t_f$, because the spline ends with
+zero velocity, and the friction stops the rest. The arm then stays where it is, and the small error
+from the end of the spline stays too (less than 0.01\,rad at every joint).
 
 % ===========================================================================
 \section*{C: Operational Space Control}
@@ -532,7 +557,7 @@ Before we started the recording, we moved the robot to the start point with \tex
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.82\textwidth]{proj2_circle.png}
+  \includegraphics[width=0.74\textwidth]{proj2_circle.png}
   \caption{\texttt{proj2Control}, one circle: position ($x$, $y$) and desired position, orientation
   $\alpha$ and desired orientation, position error $e = x - x_d$, joint angles $q$ and joint torques
   $\tau$ (dotted lines: torque limits). The desired orientation is 0, so the orientation error is
@@ -708,19 +733,31 @@ controller has computed it:
   \label{fig:c5b}
 \end{figure}
 
+Fig.~\ref{fig:c5b} does not show the tracking error $|x - x_d|$. It shows how far the disturbed run
+is away from the normal run of \texttt{proj2} at the same time. This way we only see what the
+disturbance changes. The tracking error itself hardly changes: its RMS value is 7.1\,mm with noise
+and 7.3\,mm with the gravity error, compared to 7.2\,mm for the normal circle (maximum 10.5\,mm,
+12.0\,mm and 10.7\,mm).
+
+The curves do not start at 0. The recordings do not start at exactly the same point, because the
+arm stops 1 to 2\,mm apart after \texttt{proj1}. So the first value (1.9\,mm for the noise, 1.3\,mm
+for the gravity error) is this start offset and not an effect of the disturbance.
+
 \begin{itemize}
   \item \textbf{Noise:} the end effector is on average only 0.7\,mm away from the normal run
-        (max. 1.9\,mm), even though the noise is quite large (up to 15.6\,Nm at joint 1). The noise is
+        (after the start at most 1.6\,mm), even though the noise is quite large (up to 15.6\,Nm at
+        joint 1). The noise is
         different in every cycle and is zero on average. The arm is heavy and cannot follow such fast
         changes, and the controller corrects the rest.
   \item \textbf{Error in $G$:} here the difference is larger, on average 2.6\,mm (max. 3.9\,mm). The
         missing torque is always there and always acts in the same direction. The P-term has to
         replace it, and for that it needs an error.
   \item \textbf{Is the behavior the same in the whole workspace?} No. With the gravity error the
-        difference changes along the circle between 1.7\,mm and 3.9\,mm. It is large in the first
-        quarter and at the end of the circle. There $|\det J|$ is small (about 0.10 to 0.12), so the
-        arm is closer to a singularity. In the middle of the circle the difference is small and
-        $|\det J|$ is large (about 0.16 to 0.18), see Fig.~\ref{fig:c5b}. We explain it like this: the
+        difference changes along the circle. From the start offset of 1.3\,mm it rises to 3.9\,mm in
+        the first quarter, goes down to 1.7\,mm in the middle and rises again to 3.8\,mm at the end.
+        In the first quarter and at the end $|\det J|$ is small (about 0.10 to 0.12), so the arm is
+        closer to a singularity. In the middle of the circle $|\det J|$ is large (about 0.16 to
+        0.18), see Fig.~\ref{fig:c5b}. We explain it like this: the
         controller has to make up for the torque error with a force $F$ at the end effector
         ($\tau = J^T F$). Close to a singularity it needs a larger force for the same joint torque. A
         larger force means a larger error $x - x_d$. Also the missing gravity torque itself depends on

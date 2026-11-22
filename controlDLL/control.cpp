@@ -74,18 +74,18 @@ void computeSpline(GlobalVariables& gv)
 // Follows the spline with a joint space PD controller with gravity
 // compensation. The desired position and velocity come from the spline:
 //   tau = -kp (q - q_d) - kv (dq - dq_d) + G
-// After tf the trajectory is finished and the robot switches to float control.
+// After tf, qd and dqd keep the end of the spline and the robot floats.
 void followSpline(GlobalVariables& gv)
 {
-  double t = gv.curTime - spline.t0;
-  if (t > spline.tf) {
-    floatControl(gv);
-    return;
-  }
+  double t = min(gv.curTime - spline.t0, spline.tf);
 
   gv.qd = spline.a0 + spline.a1 * t + spline.a2 * (t * t) + spline.a3 * (t * t * t);
   gv.dqd = spline.a1 + spline.a2 * (2.0 * t) + spline.a3 * (3.0 * t * t);
 
+  if (gv.curTime - spline.t0 > spline.tf) {
+    floatControl(gv);
+    return;
+  }
   gv.tau = -gv.kp * (gv.q - gv.qd) - gv.kv * (gv.dq - gv.dqd) + gv.G;
 }
 

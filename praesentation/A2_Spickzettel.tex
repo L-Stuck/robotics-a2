@@ -76,7 +76,7 @@
 \newtcolorbox{extra}{
   enhanced, breakable, colback=gray!7, colframe=gray!70!black, boxrule=0.6pt, arc=2pt,
   left=6pt, right=6pt, top=4pt, bottom=4pt,
-  title={\bfseries Nur falls nachgefragt -- steht so nicht im Bericht (eigene Rechnung)},
+  title={\bfseries Mit Orientierung gerechnet -- steht kurz im Bericht (A5 b, Determinante)},
   coltitle=white, fonttitle=\bfseries, fontupper=\small
 }
 
@@ -109,7 +109,7 @@ Zahlen aus dem Bericht}
   A4 & \code{computeJ} & $J = \partial F / \partial q$ & letzte Zeile $(1, 1, 1)$ \\
   A5 & Skizze & Spalten von $J$ als Pfeile & i steuerbar, ii nahe, iii in Singularität \\
   B1 & Rechnung & 2 kubische Splines + Via & $\dot q_b = (-0.31,\ 0,\ 0)$\,rad/s \\
-  B2 & \code{computeTf}, \code{computeSpline}, \code{followSpline} & Spline + PD + $G$ & proj1: $t_f = 2.46$\,s, Fehler $< 0.01$\,rad \\
+  B2 & \code{computeTf}, \code{computeSpline}, \code{followSpline} & Spline + PD + $G$ & proj1: $t_f = 2.47$\,s, Fehler $< 0.01$\,rad \\
   C1 & \code{setCircleTarget}, \code{proj2Control} & Kreis, $\beta = \dot\beta\,t$ & 5\,s pro Runde, $0.25$\,m/s \\
   C2 & \code{operationalSpaceControl} & $\tau = J^T F + G$ & keine inverse Kinematik \\
   C3 & Gains & Fehler $\sim 1/k_p$ & max.\ 11\,mm, RMS 7\,mm, $\tau_1$ bis 116\,Nm \\
@@ -135,7 +135,7 @@ Zahlen aus dem Bericht}
 \begin{itemize}
   \item $L_1 = 0.41$\,m, $L_2 = 0.43$\,m, $L_3 = 0.055$\,m (\code{l1}, \code{l2}, \code{l3} im Header). Abkürzungen wie im
         Bericht: $s_1 = \sin q_1$, $c_{12} = \cos(q_1 + q_2)$, $s_{123} = \sin(q_1 + q_2 + q_3)$ usw.
-  \item Simulator: $\dot q_{\max} = 0.79$\,rad/s, $\ddot q_{\max} = 1.05$\,rad/s$^2$ für alle Gelenke,
+  \item Simulator: $\dot q_{\max} = \frac{\pi}{4} = 0.79$\,rad/s, $\ddot q_{\max} = \frac{\pi}{3} = 1.05$\,rad/s$^2$ für alle Gelenke,
         $\tau_{\max} = 156.4 / 89.4 / 20.1$\,Nm.
 \end{itemize}
 
@@ -167,7 +167,7 @@ direkt vergleichen, der Nullpunkt ist ein anderer.)
 \begin{enumerate}
   \item 3-DOF-Modus: \code{robottype 1}. In der GUI \glqq torque limits\grqq{} aus und \glqq Load gains\grqq{}
         (\code{loadgains} geht in der Konsole nicht; dort z.\,B.\ \code{kp 21 3000 1350 300}, \code{kv 21 245 70 21}).
-  \item \code{proj1 0 0 0} -- fährt in 2.46\,s zum Kreisstart $(0.8,\ 0.35)$, danach Float. Die drei Zahlen werden ignoriert,
+  \item \code{proj1 0 0 0} -- fährt in 2.47\,s zum Kreisstart $(0.8,\ 0.35)$, danach Float. Die drei Zahlen werden ignoriert,
         die Konsole will aber drei Argumente.
   \item \code{proj2} -- Kreis, 5\,s pro Runde, läuft weiter, bis ein anderer Regler startet. (Meldet die Konsole
         \glqq expected \ldots{} args\grqq, Nullen anhängen wie bei proj1.)
@@ -431,9 +431,8 @@ die $x$- und $y$-Einträge der Spalten von $J$.
 \begin{extra}
 $\det J = -L_1 L_2\, c_2$ (Spalte 2 von Spalte 1 und Spalte 3 von Spalte 2 abziehen, dann entwickeln). In ii und iii ist
 $q_2 = \frac{\pi}{2}$, also $\det J = 0$ in \emph{beiden}. Mit Orientierung gerechnet ist ii also schon singulär. Der
-Grund: Glied 1 und 2 sind genau gestreckt. Die kleine Bewegung entlang des Arms in ii kommt nur von Gelenk 3, und das dreht
-dabei immer auch die Hand, $\alpha$ ändert sich mit. Die Aufgabe fragt nach der Skizze (nur $x$, $y$), deshalb steht im
-Bericht \glqq nahe\grqq. In i ist $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne 0$.
+Grund: Glied 1 und 2 sind genau gestreckt. Die kleine Bewegung entlang des Arms in ii gibt es nur, weil Glied 3 um $0.1$\,rad abgeknickt ist. Sie entsteht immer zusammen mit einer Drehung der Hand, $\alpha$ ändert sich mit.
+Im Bericht steht beides: für die Position (Skizze, nur $x$, $y$) \glqq nahe\grqq, mit Orientierung \glqq singulär\grqq. In i ist $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne 0$.
 \end{extra}
 
 \begin{fragen}
@@ -442,7 +441,7 @@ Bericht \glqq nahe\grqq. In i ist $q_2 = 0$, $\det J = -L_1 L_2 = -0.18 \ne 0$.
 andere Richtung zusammensetzen.}
 \frage{Warum ist ii nur \glqq nahe\grqq{} und iii \glqq in\grqq{} der Singularität?}
 {In ii haben die Pfeile wegen $q_3 = 0.1$ noch einen kleinen Anteil entlang des Arms ($0.01$\,m/rad), in iii ist er genau
-null. In ii geht die Bewegung also noch, aber nur mit sehr großen Gelenkgeschwindigkeiten.}
+null. In ii geht die Bewegung also noch, aber nur mit sehr großen Gelenkgeschwindigkeiten. Das gilt für die Position. Mit Orientierung gerechnet ist auch ii schon singulär (siehe grauer Kasten), so steht es auch im Bericht.}
 \frage{Was passiert in der Nähe einer Singularität?}
 {Eine kleine Bewegung im Arbeitsraum braucht eine riesige Bewegung im Gelenkraum (Tutorial T5). Das sieht man auch im
 Bonus: Wo $|\det J|$ klein ist, wird der Fehler größer.}
@@ -532,8 +531,8 @@ $t_f$ = größter dieser Werte über alle Gelenke. proj1 aus der Nullstellung:
   & Gelenk 1 & Gelenk 2 & Gelenk 3 \\
   \midrule
   $|\Delta q|$ [rad] & 0.10 & 0.97 & 1.06 \\
-  $t_f$ aus Geschwindigkeit [s] & 0.18 & 1.84 & 2.01 \\
-  $t_f$ aus Beschleunigung [s] & 0.74 & 2.35 & \textbf{2.46} \\
+  $t_f$ aus Geschwindigkeit [s] & 0.18 & 1.85 & 2.03 \\
+  $t_f$ aus Beschleunigung [s] & 0.74 & 2.35 & \textbf{2.47} \\
   \bottomrule
 \end{tabular}
 }
@@ -578,24 +577,24 @@ und der Regler ihn in jedem Takt benutzt. \code{PrVector(gv.dof)} ist ein Nullve
 \begin{lstlisting}[firstnumber=78]
 void followSpline(GlobalVariables& gv)
 {
-  double t = gv.curTime - spline.t0;
-  if (t > spline.tf) {
-    floatControl(gv);
-    return;
-  }
+  double t = min(gv.curTime - spline.t0, spline.tf);
 
   gv.qd = spline.a0 + spline.a1 * t + spline.a2 * (t * t) + spline.a3 * (t * t * t);
   gv.dqd = spline.a1 + spline.a2 * (2.0 * t) + spline.a3 * (3.0 * t * t);
 
+  if (gv.curTime - spline.t0 > spline.tf) {
+    floatControl(gv);
+    return;
+  }
   gv.tau = -gv.kp * (gv.q - gv.qd) - gv.kv * (gv.dq - gv.dqd) + gv.G;
 }
 \end{lstlisting}
-\textbf{Z.\,78--90:} Zeit seit dem Start, nach $t_f$ Float ($\tau = G$). Sonst Spline und seine Ableitung auswerten und
-in \code{gv.qd}/\code{gv.dqd} schreiben, dann das Regelgesetz aus dem Blatt
+\textbf{Z.\,78--90:} Zeit seit dem Start, mit \code{min} auf $t_f$ begrenzt. Spline und Ableitung auswerten und
+in \code{gv.qd}/\code{gv.dqd} schreiben. Nach $t_f$ stehen dort Ziel und Geschwindigkeit 0, dann Float ($\tau = G$). Davor das Regelgesetz aus dem Blatt
 $\tau = -k_p(q - q_d) - k_v(\dot q - \dot q_d) + G$. \code{*} zwischen \code{PrVector}s ist elementweise, jedes Gelenk hat
 sein eigenes $k_p$. \code{njtrackControl} und \code{proj1Control} rufen nur \code{followSpline} auf.
 
-\textbf{Ergebnis proj1:} $t_f = 2.46$\,s (Beschleunigungsgrenze von Gelenk 3). $q$ und $q_d$ liegen übereinander, Fehler
+\textbf{Ergebnis proj1:} $t_f = 2.47$\,s (Beschleunigungsgrenze von Gelenk 3). $q$ und $q_d$ liegen übereinander, Fehler
 immer $< 0.01$\,rad, max.\ $55.5$\,Nm an Gelenk 1 (Grenze $156.4$). Gains $k_p = 3000/1350/300$, $k_v = 245/70/21$, von Hand
 im Simulator getunt.
 
@@ -613,8 +612,7 @@ $\le$ Grenze setzen und nach $t_f$ auflösen.}
 $t_0$ und $t_f$ und sind bei $t_f$ genau am Ziel, deshalb kommen alle gleichzeitig an (verlangt in B2c). Die anderen Gelenke
 bleiben dabei unter ihren Grenzen.}
 \frage{Was passiert nach $t_f$?}
-{Der Regler schaltet auf Float ($\tau = G$), wie im Blatt verlangt. Float hat keinen Positionsterm, deshalb bleibt ein
-kleiner Fehler stehen.}
+{Der Regler schaltet auf Float ($\tau = G$), wie im Blatt verlangt. Float gleicht nur die Schwerkraft aus, ohne Positions- und Geschwindigkeitsterm. Es zieht den Arm also nicht zum Ziel und bremst nicht aktiv. Bei uns bleibt der Arm trotzdem stehen, weil der Spline mit Geschwindigkeit 0 endet und die Reibung den Rest stoppt. Der kleine Fehler vom Ende bleibt.}
 \frage{Warum dürfen die Gains viel höher sein als in A1?}
 {In A1 sprang der Sollwert um $0.17$\,rad ($10^\circ$), der Fehler war am Anfang groß und damit auch das Drehmoment. Hier ändert sich
 $q_d$ langsam und springt nicht, der Fehler bleibt klein. Deshalb bleibt auch $\tau$ mit großem $k_p$ unter der Grenze.}
@@ -918,12 +916,13 @@ Zufallsgenerator, damit kein weiteres Include nötig ist; der feste Startwert gi
 
 \textbf{Ergebnisse (gegenüber dem normalen Kreis):}
 \begin{itemize}
-  \item \textbf{Rauschen:} im Mittel nur $0.7$\,mm (max.\ $1.9$\,mm), obwohl bis $15.6$\,Nm an Gelenk 1. Das Rauschen ist in
+  \item \textbf{Was der Plot zeigt:} den Abstand zur normalen Fahrt, nicht den Bahnfehler $|x - x_d|$. Der Bahnfehler ändert sich kaum: RMS $7.1$ (Rauschen) und $7.3$ ($G$) statt $7.2$\,mm.
+  \item \textbf{Rauschen:} im Mittel nur $0.7$\,mm (nach dem Start max.\ $1.6$\,mm), obwohl bis $15.6$\,Nm an Gelenk 1. Das Rauschen ist in
         jedem Takt anders und im Mittel null. Der schwere Arm folgt so schnellen Änderungen nicht, den Rest korrigiert der
         Regler.
   \item \textbf{80\,\% von $G$:} im Mittel $2.6$\,mm (max.\ $3.9$\,mm). Das fehlende Moment ist immer da und wirkt immer in
         dieselbe Richtung. Der P-Term muss es ersetzen und braucht dafür einen Fehler.
-  \item \textbf{Nicht überall gleich:} Mit dem $G$-Fehler schwankt die Abweichung entlang des Kreises zwischen $1.7$ und
+  \item \textbf{Nicht überall gleich:} Mit dem $G$-Fehler schwankt die Abweichung entlang des Kreises (nach dem Startversatz von $1.3$\,mm, die Aufnahmen starten nicht exakt am selben Punkt) zwischen $1.7$ und
         $3.9$\,mm. Groß ist sie, wo $|\det J|$ klein ist ($0.10$--$0.12$, näher an einer Singularität), klein, wo $|\det J|$
         groß ist ($0.16$--$0.18$). Unsere Erklärung: Über $\tau = J^T F$ braucht der Regler nahe einer Singularität eine
         größere Kraft für dasselbe Moment, und größere Kraft heißt größerer Fehler. Außerdem hängt das fehlende Moment selbst
