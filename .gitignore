@@ -23,3 +23,8 @@
 /plotting/*
 !/plotting/*.png
 /plotting/proj1_test.png
+
+!/praesentation/
+/praesentation/*
+!/praesentation/*.tex
+!/praesentation/*.pdf
